@@ -9,8 +9,8 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 router.post('/create-checkout-session', async (req, res) => {
   const { gigId, sellerId, buyerId, price } = req.body;
+
   try {
-    //console.log(stripe);
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -20,7 +20,7 @@ router.post('/create-checkout-session', async (req, res) => {
             product_data: {
               name: 'Freelancer Service',
             },
-            unit_amount: price, // $20.00
+            unit_amount: price, // amount in cents
           },
           quantity: 1,
         },
@@ -28,15 +28,16 @@ router.post('/create-checkout-session', async (req, res) => {
       mode: 'payment',
       success_url: 'http://localhost:3000/success',
       cancel_url: 'http://localhost:3000/cancel',
-      client_reference_id: buyerId, // for saving in webhook
+      client_reference_id: buyerId,
       metadata: {
         gigId,
-        sellerId
-      }
+        sellerId,
+      },
     });
 
-    res.json({ url: session.url });
+    res.json({ sessionUrl: session.url }); // ✅ use `sessionUrl` to match frontend
   } catch (error) {
+    console.error("Stripe checkout error:", error);
     res.status(500).json({ error: error.message });
   }
 });

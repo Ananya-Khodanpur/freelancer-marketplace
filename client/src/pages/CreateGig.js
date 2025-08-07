@@ -11,7 +11,8 @@ const gigSchema = z.object({
     .number({ invalid_type_error: "Price is required" })
     .positive("Price must be positive"),
   category: z.string().min(3, "Category is required"),
-  image: z.any(),
+  image: z.any()
+    .refine((files) => files?.length > 0, "Image is required"),
 });
 
 const CreateGig = () => {
@@ -54,10 +55,14 @@ const CreateGig = () => {
         price: data.price,
         category: data.category,
         images: [imageUrl],
+        userId: JSON.parse(localStorage.getItem("userId")), // Assuming userId is stored in localStorage
       };
 
       const token = localStorage.getItem("token");
-
+      if (!token) {
+  alert("You must be logged in to create a gig");
+  return;
+}
       const res = await fetch("http://localhost:5000/api/gigs/create", {
         method: "POST",
         headers: {

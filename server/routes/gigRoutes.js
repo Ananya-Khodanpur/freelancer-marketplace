@@ -24,6 +24,16 @@ router.get("/seller/:sellerId", async (req, res) => {
   }
 });
 
+router.get("/buyer/:buyerId", async (req, res) => {
+  try {
+    const gigs = await Gig.find({ buyers: req.params.buyerId });
+    res.status(200).json(gigs);
+  } catch (err) {
+    console.error("Error fetching buyer gigs:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.post("/create", verifyToken, createGig); // ✅ Middleware used here
 router.get("/", getGigs);
 router.put("/:id", verifyToken, updateGig);
